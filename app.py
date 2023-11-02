@@ -34,7 +34,7 @@ def is_image(content_type: str) -> bool:
 @app.post("/scale")
 async def image_scale(file: UploadFile):
     scale = 30
-    filename = file.filename.replace(" ", "_")
+    filename = file.filename
 
     print(f"{file.content_type=}")
     print(f"{filename=}")
@@ -65,6 +65,7 @@ async def image_scale(file: UploadFile):
     """ time.sleep(random.random() * random.randint(1, 2)) """
 
     with open(f"./scaled/scaled_{filename}", "rb") as fp:
+
         return {
             "image": base64.b64encode(fp.read()),
             "type": file.content_type,
