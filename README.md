@@ -18,6 +18,7 @@ Takes a `file` which is a image file and a `scale` parameter.
 Go get `asdf-vm`
 
 ```bash
+asdf plugin-add python
 asdf install
 pip install -r requirments.txt
 ```
