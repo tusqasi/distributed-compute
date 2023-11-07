@@ -22,3 +22,10 @@ asdf plugin-add python
 asdf install
 pip install -r requirments.txt
 ```
+
+
+## Running 
+
+```bash
+ uvicorn app:app --reload
+```
