@@ -11,12 +11,9 @@ Takes an image and a scale factor, and returns the image scaled by the factor.
 ---
 
 Stuff done by the service: 
-1. Listen for `POST` requests from the [frontend](https://github.com/frontend)
-2. Save the image to disk
-3. Do a little `convert input_imagee -resize scale% output_image`. `convert` command is available to install on most linux distros
-4. Send the scaled image back
-5. After the request is done, send the orginal image to the [storage service](https://github.com/tusqasi/distributed-storage), along with the user_id and scale factor to be put away for later use
-
+1. Listen for `POST` requests from the
+2. Do a little operation with Pillow
+3. Send the scaled image back
 
 ## Routes
 POST `/scale`  
@@ -24,7 +21,7 @@ Takes a `file` which is a image file and a `scale` parameter.
 
 ## Requirments 
 
-Go get `asdf-vm`
+Go get [`asdf-vm`](https://asdf-vm.com)
 
 ```bash
 asdf plugin-add python
