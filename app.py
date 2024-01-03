@@ -1,12 +1,11 @@
-import base64
 import logging
-import os
-import subprocess
-import uuid
+import base64
+from io import BytesIO
 
-import requests
+# import requests
 from fastapi import BackgroundTasks, FastAPI, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from PIL import Image
 
 STORAGE_SERVICE_URL = "http://localhost:4000/api/files/upload"
 
@@ -30,53 +29,18 @@ def is_image(content_type: str) -> bool:
 
 @app.post("/scale")
 async def image_scale(
-    file: UploadFile, scale: int, user_id: str, background_tasks: BackgroundTasks
+    file: UploadFile, 
+    scale: float,
 ):
-    filename = file.filename.replace(" ", "_")
 
-    # I am testing this setup, i am uploading a single file multiple times which is not expected
-    # having randomess in the filename will alleviate conflicts
-    random_id = uuid.uuid4()
     if not is_image(file.content_type):
         print("not image")
         return "notimage"
 
-    original_file = file.file.read()
+    img = Image.open(file.file)
+    mem_file = BytesIO()
+    resized = img.resize((int(img.width*scale), int(img.height*scale)))
+    resized.save(mem_file,'png')
+    mem_file.seek(0)
+    return {"ok": base64.b64encode(mem_file.read())}
 
-    with open(f"./scratch/{random_id}{filename}", "xb") as fp:
-        fp.write(original_file)
-
-    cmd = f"convert ./scratch/{random_id}{filename} -resize {scale}% ./scaled/{random_id}{filename}"
-
-    subprocess.run(cmd, shell=True)
-
-    def send_images_to_storage():
-        logger.info("Sending image to Storage service")
-        try:
-            ## CUrl is just *chefs-kiss*
-            res = subprocess.run(
-                f"curl -q -X POST \
-                    -F 'file=@./scratch/{random_id}{filename}' \
-                    'http://127.0.0.1:4000/api/files/upload?scale={scale}&user_id={user_id}' ",
-                shell=True,
-                check=True,
-                capture_output=True,
-            )
-            logger.info("Sent image to Storage service: %s ", res.stdout.decode())
-        except requests.exceptions.ConnectionError:
-            logger.error(
-                "Can not connect to File Storage Service. Is the service running?"
-            )
-        finally:
-            logger.info("Removing temp files")
-            os.remove(f"./scratch/{random_id}{filename}")
-            os.remove(f"./scaled/{random_id}{filename}")
-
-    with open(f"./scaled/{random_id}{filename}", "rb") as fp:
-        background_tasks.add_task(
-            send_images_to_storage,
-        )
-        return {
-            "image": base64.b64encode(fp.read()),
-            "type": file.content_type,
-        }
