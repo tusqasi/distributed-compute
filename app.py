@@ -42,5 +42,5 @@ async def image_scale(
     resized = img.resize((int(img.width*scale), int(img.height*scale)))
     resized.save(mem_file,'png')
     mem_file.seek(0)
-    return {"ok": base64.b64encode(mem_file.read())}
+    return {"image": base64.b64encode(mem_file.read())}
 
